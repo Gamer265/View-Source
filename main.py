@@ -1,10 +1,10 @@
 import asyncio
 import json
 import os
+import random
 from glob import glob
 from sqlite3 import OperationalError
 from traceback import format_exc
-
 
 from telethon import TelegramClient, events
 from telethon.sessions import StringSession
@@ -21,18 +21,21 @@ active = {}
 banned = []
 
 
-API_ID = 27447487
-API_HASH = "012b94d5275b4b0b3da9df20955159ac"
-SESSION = "1AZWarzUBu26dzGuMfdA-L8sVIkJmvEDvNWUwlObtQOR1tNJMc8EqplU6G5N7MZPGyrxLNf9bVnkSiL6RNHpTKw7hV23iTLkVh3vZTSMJEtvV-qYmLQcRgz45fzwoT2ggEvQtijFnjJxCLXfUehafelO_eZFI7s74nNGkEkBHfRQQEo78TLToPlOBnEqI2B8MipoMCTlrWuq1roxhL83HWCx6nBn1OAPEr3eV9y--DZlKHxSmNJG6Uj7_NgsHjZ0--St6yHCXJoGe11LiEWyxtJF_PuaZ6d_LJg282GFTn49RusFHYobmMapnOQ1XnTpxoAe8qOlPg4yrrYo5wzWBXgnYdeGxh14="
-FOLDER = "sessions"
+API_ID = 24772061
+API_HASH = "cd7c5ab04bfaeb0ad67f21fdb7cc8cf0"
+SESSION = "1BVtsOJUBuwc98LRILcMZWblVW7tlMEdfeZKyhouOqU4BgWK9EiZYRGwX7tSgpk2ZBT2I0AjI62KIgO9Qq6zYaL6o2t3votxA4bOAp-9DMWAIxF3wbJTA6VQkTDx2R17jDH5pUo5ARmbNetYF_alyRs4BFYgAl2yHsYw0Vd2qi2zPiFFTcQKs2C6RV27Pnwh8aaEpG_GFWCjQy5Ox-PAVMlIb04GNrHRWSf5etnT2SFteT0VMyrX1clKAva_-AKsIvHrRNY-xi0SPs-lqr-1YE2jYSdlXXak3pWeMNGny8CB4qvGfwZuAXbBu32cG6azWMJg2uRg33ddKarBqE-L9c6mpd0BB26E="
+FOLDER = "sess"
 ADMINS = [1872074304, 862271564]
 PROXY = {
-    "proxy_type": 3,
-    "username": "f891iy4kds30751",
-    "password": "l315wdgrlthly3z",
-    "addr": "rp.proxyscrape.com",
-    "port": 6060,
+    "proxy_type": 2,
+    "username": "user-GamerX-country-bd",
+    "password": "WE7kiozKb8ka75yqVr",
+    "addr": "gate.visitxiangtan.com",
+    "port": 7000,
 }
+APIS = [
+    line.split(",") for line in open("api.csv", "r", encoding="utf-8").readlines()
+]
 
 DATA = {}
 
@@ -45,6 +48,11 @@ try:
 except Exception as error:
     print(str(error))
     exit()
+
+def divide_client(lst):
+    part_length = len(lst) // 6
+    divided_list = [lst[i:i+part_length] for i in range(0, len(lst), part_length)]
+    return divided_list
 
 def link_parser_tg(link):
     hash = False
@@ -253,17 +261,11 @@ async def login(data: dict) -> TelegramClient:
             if not active[phone].is_connected():
                 await active[phone].connect()
             return active[phone]
+        api_id, api_hash = random.choice(APIS)
         client = TelegramClient(
             data["sess_file"].replace(".session", ""),
-            api_id=int(data["app_id"]),
-            api_hash=data["app_hash"],
-            system_version=data["sdk"],
-            app_version=data["app_version"],
-            device_model=data["device"],
-            system_lang_code=data.get("system_lang_pack")
-            or data.get("lang_pack")
-            or "en",
-            lang_code=data.get("lang_pack") or "en",
+            api_id=int(api_id),
+            api_hash=api_hash,
             proxy=proxi,
             flood_sleep_threshold=120,
             timeout=15,
@@ -356,6 +358,7 @@ async def login(data: dict) -> TelegramClient:
 
 @bot.on(events.NewMessage(func=lambda e: not e.is_private))
 async def on_new_post(e: events.NewMessage.Event):
+# async def on_new(username, eid):
     chs = list(DATA.keys())
     th = await e.get_chat()
     id = get_peer_id(th)
@@ -364,7 +367,10 @@ async def on_new_post(e: events.NewMessage.Event):
             clients = await validateAccounts(_return=True)
             print(f"Giving Views With {len(clients)} Clients.")
             username = DATA[id]["username"]
-            await asyncio.gather(*[give_views(client, username, e.id) for client in clients])
+            list_cli = divide_client(clients)
+            for clis in list_cli:
+                await asyncio.gather(*[give_views(client, username, e.id) for client in clis])
+                await asyncio.sleep(10)
             print(f"Succesfully Given Views To {username}/{e.id}")
         except BaseException:
             print(str(format_exc()))
@@ -380,9 +386,13 @@ async def validateAccounts(_return=False, off=False):
         return await asyncio.gather(*[desc(cli) for cli in clients])
     print(f"Sucesfully Loaded {len(clients)}")
 
+async def msg_me():
+    await bot.send_message("@kaif_00z", "hi")
+
 load_jsons(FOLDER)
 run_thread(validateAccounts)
 try:
+    loop.run_until_complete(msg_me())
     loop.run_forever()
 except KeyboardInterrupt:
     print("Disconnecting The Clients...!")

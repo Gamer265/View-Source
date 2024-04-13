@@ -1,31 +1,50 @@
-# import requests
-# username = "f891iy4kds30751"
-# password = "l315wdgrlthly3z"
-# proxy = "rp.proxyscrape.com:6060"
-# proxy_auth = "{}:{}@{}".format(username, password, proxy)
-# proxies = {
-#     "http":"http://{}".format(proxy_auth)
+# from telethon import TelegramClient, events
+# import json
+
+# PROXY = {
+#     "proxy_type": 3,
+#     "username": "f891iy4kds30751",
+#     "password": "l315wdgrlthly3z",
+#     "addr": "rp.proxyscrape.com",
+#     "port": 6060,
 # }
-# urlToGet = "http://ip-api.com/json"
-# r = requests.get(urlToGet , proxies=proxies)
-# print("Response:\n{}".format(r.text))
+# with open("sessions/acc (82).json", "r") as f:
+#     data = json.loads(f.read())
+# bot = TelegramClient(
+#     "sessions/" + data["session_file"].replace(".session", ""),
+#     api_id=int(data["app_id"]),
+#     api_hash=data["app_hash"],
+# ).start()
 
-import os, sys, glob
 
-def get_all_files(folders):
-    lst = []
-    if isinstance(folders, str):
-        folders = [folders]
-    while folders:
-        folder = os.path.join(folders.pop(), "*")
-        files = glob.glob(folder)
-        if not files:
-            break
-        for file in files:
-            if os.path.isdir(file):
-                folders.append(file)
-            else:
-                lst.append(file)
-    return lst
+# @bot.on(events.NewMessage())
+# async def _(e):
+#     print((await bot.get_me()))
+#     print(e.text)
 
-print(get_all_files("sessions/"))
+# print("started")
+# bot.loop.run_forever()
+
+# import requests
+# url = 'https://ip.smartproxy.com/json'
+# username = 'user-GamerX-country-bd'
+# password = 'WE7kiozKb8ka75yqVr'
+# proxy = f"socks5h://{username}:{password}@gate.smartproxy.com:7000"
+# result = requests.get(url, proxies = {
+#     'http': proxy,
+#     'https': proxy
+# })
+# print(result.text)
+
+import os
+
+from socks import PROXY_TYPE_HTTP
+
+from telethon.sync import TelegramClient
+from telethon.sessions import StringSession
+
+api_id = int(os.getenv('API_ID') or input("Enter your API_ID: "))
+api_hash = os.getenv('API_HASH') or input("Enter your API_HASH: ")
+
+with TelegramClient(StringSession(), api_id, api_hash) as client:
+    print("\n" + client.session.save())
